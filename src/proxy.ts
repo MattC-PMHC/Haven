@@ -19,6 +19,7 @@ const publicPaths = [
   "/forgot-password",
   "/api/auth/callback",
   "/public",
+  "/dashboard", // TODO: Remove — temporary for design preview without Supabase
 ]
 
 function isPublicPath(pathname: string): boolean {
@@ -35,6 +36,15 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.includes(".")
+  ) {
+    return NextResponse.next()
+  }
+
+  // If Supabase isn't configured yet, skip all auth checks
+  // TODO: Remove this guard once .env.local is set up
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
     return NextResponse.next()
   }

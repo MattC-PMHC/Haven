@@ -3,7 +3,7 @@ import { Toaster } from "sonner"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Haven Cemetery Management",
+  title: "Haven",
   description:
     "Cloud-based cemetery management platform for Australian local government councils.",
 }
