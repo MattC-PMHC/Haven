@@ -19,6 +19,7 @@ import {
   ScrollText,
   CalendarCheck,
   ClipboardList,
+  Landmark,
   FileText,
   Users,
   DollarSign,
