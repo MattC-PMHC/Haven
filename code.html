@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Haven Cemetery Management | Council Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error": "#ffffff",
+                    "on-surface": "#171c1f",
+                    "primary-container": "#2c3e50",
+                    "surface-variant": "#dfe3e7",
+                    "primary": "#162839",
+                    "tertiary-fixed": "#ffddb7",
+                    "on-primary-fixed": "#091d2e",
+                    "inverse-on-surface": "#edf1f5",
+                    "surface-container-low": "#f0f4f8",
+                    "surface-dim": "#d6dade",
+                    "outline-variant": "#c4c6cd",
+                    "on-background": "#171c1f",
+                    "inverse-primary": "#b5c8df",
+                    "on-primary-container": "#96a9be",
+                    "surface-bright": "#f6fafe",
+                    "on-secondary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#cbe7f5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#4e6874",
+                    "surface-container-highest": "#dfe3e7",
+                    "surface-tint": "#4e6073",
+                    "tertiary-fixed-dim": "#e3c19b",
+                    "primary-fixed-dim": "#b5c8df",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#43474c",
+                    "on-tertiary-fixed-variant": "#5a4225",
+                    "secondary": "#48626e",
+                    "error": "#ba1a1a",
+                    "surface-container": "#eaeef2",
+                    "surface": "#f6fafe",
+                    "inverse-surface": "#2c3134",
+                    "primary-fixed": "#d1e4fb",
+                    "on-tertiary-container": "#c1a17d",
+                    "on-tertiary-fixed": "#291802",
+                    "background": "#f6fafe",
+                    "on-primary": "#ffffff",
+                    "tertiary": "#362308",
+                    "on-secondary-fixed-variant": "#304a55",
+                    "on-secondary-fixed": "#021f29",
+                    "secondary-container": "#cbe7f5",
+                    "on-primary-fixed-variant": "#36485b",
+                    "surface-container-high": "#e4e9ed",
+                    "tertiary-container": "#4e381c",
+                    "secondary-fixed-dim": "#afcbd8",
+                    "outline": "#74777d",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Public Sans"],
+                    "body": ["Public Sans"],
+                    "label": ["Public Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .premium-gradient {
+            background: linear-gradient(135deg, #162839 0%, #2c3e50 100%);
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 flex flex-col py-6 px-4 border-r border-slate-200 z-50">
+<div class="mb-10 px-2 flex items-center gap-3">
+<div class="w-10 h-10 premium-gradient rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h1 class="text-xl font-bold tracking-tighter text-slate-900 leading-tight">City Council</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold">Cemetery Division</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-950 border-r-2 border-slate-900 font-medium transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">account_box</span>
+<span>Registry</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span>Grave Maps</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span>Maintenance</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">description</span>
+<span>Permits</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Reports</span>
+</a>
+</nav>
+<button class="mt-4 mx-2 premium-gradient text-white py-3 rounded-xl flex items-center justify-center gap-2 font-semibold shadow-lg hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+<span>New Record</span>
+</button>
+<div class="mt-auto space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-200/50 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-64 min-h-screen flex flex-col">
+<!-- TopAppBar Anchor -->
+<header class="w-full sticky top-0 z-40 bg-slate-50/80 backdrop-blur-md shadow-sm flex items-center justify-between px-8 h-16">
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full w-96 group focus-within:ring-2 ring-primary/20 transition-all">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-full" placeholder="Search registry or plot number..." type="text"/>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:text-slate-900 transition-colors p-2 rounded-full hover:bg-slate-100">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="text-slate-500 hover:text-slate-900 transition-colors p-2 rounded-full hover:bg-slate-100 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-slate-200"></div>
+<div class="flex items-center gap-3 pl-2">
+<div class="text-right">
+<p class="text-sm font-semibold text-slate-900">Admin Steward</p>
+<p class="text-[10px] text-on-surface-variant font-medium">Council Administrator</p>
+</div>
+<img alt="Administrator" class="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" data-alt="Professional headshot of a middle-aged man in business attire, warm studio lighting, clean background, focused and friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlI572HIYNnFD_By3EGRr-HcQDj7wo9rxD63K73t7BXzSQvvR43hRZpzTza3xOcYZq_sQLbj0t3605i7DWdyqRFEpFyFdrOvL3F_cUR7fKwkWFVGv3SNl8DGGEY7V-woo6NJJLwJWnOp85jarttJG3r3rQaY04dvnTdbkHd2zjzwgC8Fj3LqT8SLyF9UAGOgc3xuXSu_0E1NCsKya6emlpstksFAluVvce_WNAuNH6fALvcGwP9zP6y_q5xTG1vVy0ZBtpJgY0ZowT"/>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-10 max-w-[1600px] mx-auto w-full space-y-8">
+<!-- Hero Header Section -->
+<div class="flex justify-between items-end mb-10">
+<div class="max-w-2xl">
+<h2 class="text-4xl font-extrabold text-primary tracking-tight mb-2">Haven Cemetery Overview</h2>
+<p class="text-on-surface-variant text-lg leading-relaxed">Quietly managing the legacies of our community with precision and care. You have 12 pending interments this week.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-secondary-container text-on-secondary-fixed px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">print</span>
+                        Print Manifest
+                    </button>
+</div>
+</div>
+<!-- Bento Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col justify-between border-b-4 border-primary">
+<div>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Total Capacity</p>
+<h3 class="text-3xl font-bold text-primary">8,420</h3>
+</div>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">Plots Registered</span>
+<span class="bg-primary-fixed text-on-primary-fixed text-[10px] px-2 py-1 rounded-full font-bold">+12 this month</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col justify-between border-b-4 border-green-600">
+<div>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Available Space</p>
+<h3 class="text-3xl font-bold text-green-700">1,245</h3>
+</div>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">14.7% Remainder</span>
+<span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded-full font-bold">Stable</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col justify-between border-b-4 border-tertiary">
+<div>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Maintenance Queue</p>
+<h3 class="text-3xl font-bold text-tertiary">28</h3>
+</div>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">Open Work Orders</span>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed text-[10px] px-2 py-1 rounded-full font-bold">Priority: High</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col justify-between border-b-4 border-secondary">
+<div>
+<p class="text-on-surface-variant text-sm font-medium mb-1">Permit Revenue</p>
+<h3 class="text-3xl font-bold text-secondary">$14.2k</h3>
+</div>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-xs text-on-surface-variant font-medium">MDR Current Quarter</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[10px] px-2 py-1 rounded-full font-bold">Target: 92%</span>
+</div>
+</div>
+</div>
+<!-- Main Interactive Map Section -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- GIS Map Container -->
+<div class="lg:col-span-2 bg-surface-container rounded-3xl overflow-hidden relative min-h-[600px] group border-4 border-surface-container-lowest">
+<!-- Map Legend Overlay -->
+<div class="absolute top-6 left-6 z-10 bg-surface-container-lowest/90 backdrop-blur px-5 py-4 rounded-2xl shadow-xl space-y-3">
+<p class="text-xs font-bold text-primary uppercase tracking-wider border-b border-surface-variant pb-2">Map Legend</p>
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-green-500"></span>
+<span class="text-sm font-medium text-on-surface">Available</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-blue-500"></span>
+<span class="text-sm font-medium text-on-surface">Reserved</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-amber-500"></span>
+<span class="text-sm font-medium text-on-surface">Occupied</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="w-3 h-3 rounded-full bg-red-500"></span>
+<span class="text-sm font-medium text-on-surface">Restricted</span>
+</div>
+</div>
+<!-- Map Actions Overlay -->
+<div class="absolute top-6 right-6 z-10 flex flex-col gap-2">
+<button class="bg-surface-container-lowest p-2 rounded-lg shadow-lg hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="bg-surface-container-lowest p-2 rounded-lg shadow-lg hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<button class="bg-surface-container-lowest p-2 rounded-lg shadow-lg hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+<!-- Faux Map Visualization -->
+<div class="w-full h-full relative p-20 flex items-center justify-center bg-[#f2f4f1]">
+<!-- Grid Layout simulating cemetery plots -->
+<div class="grid grid-cols-12 gap-1 w-full max-w-4xl rotate-[15deg]">
+<!-- Row of Plot Elements with differing states -->
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-blue-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-red-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<!-- Repeat visual for density -->
+<!-- Creating a block for "Heritage Section A" -->
+<div class="col-span-12 py-4 flex items-center gap-4">
+<div class="h-px bg-slate-300 flex-1"></div>
+<span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">Section B - St. Marks Path</span>
+<div class="h-px bg-slate-300 flex-1"></div>
+</div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-amber-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-red-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-blue-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-blue-500/80 cursor-pointer hover:scale-110 transition-transform"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+<div class="w-8 h-8 rounded-sm bg-green-500/80 cursor-pointer hover:scale-110 transition-transform border-2 border-white/50"></div>
+</div>
+<!-- Map Label for Location -->
+<div class="absolute bottom-8 right-8 text-on-surface-variant/40 italic flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">location_on</span>
+<span>Haven Cemetery Precinct, South Australia</span>
+</div>
+</div>
+</div>
+<!-- Side Info Cards Column -->
+<div class="space-y-8">
+<!-- Pending Booking Summary -->
+<section class="bg-surface-container-low rounded-3xl p-8 space-y-6">
+<div class="flex items-center justify-between">
+<h4 class="text-xl font-bold text-primary">Pending Interments</h4>
+<span class="text-xs font-bold text-primary px-3 py-1 bg-primary-fixed rounded-full">12 Actions</span>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-surface-container-lowest rounded-2xl flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
+<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-primary">
+<span class="text-xs font-bold">14<br/>OCT</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Eleanor Vance</p>
+<p class="text-xs text-on-surface-variant">Section A, Plot 402 • 10:30 AM</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant">chevron_right</span>
+</div>
+<div class="p-4 bg-surface-container-lowest rounded-2xl flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer">
+<div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-primary">
+<span class="text-xs font-bold">15<br/>OCT</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Samuel Thorne</p>
+<p class="text-xs text-on-surface-variant">North Lawn, Plot 12 • 02:00 PM</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+<button class="w-full text-center text-sm font-bold text-primary py-2 hover:underline">View Full Calendar</button>
+</section>
+<!-- Recent Activity Log -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm">
+<h4 class="text-xl font-bold text-primary mb-6">Recent Activity</h4>
+<div class="relative space-y-8 before:content-[''] before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-green-100 border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-green-700" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1">10 minutes ago</p>
+<p class="text-sm font-semibold text-on-surface">Plot A-402 Marking Completed</p>
+<p class="text-xs text-on-surface-variant">Maintenance Team Alpha</p>
+</div>
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-blue-700" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1">2 hours ago</p>
+<p class="text-sm font-semibold text-on-surface">Monument Permit Issued</p>
+<p class="text-xs text-on-surface-variant">L. Richards (Family Representative)</p>
+</div>
+<div class="relative pl-10">
+<div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-amber-700" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<p class="text-xs text-on-surface-variant mb-1">Yesterday</p>
+<p class="text-sm font-semibold text-on-surface">Storm Damage Report</p>
+<p class="text-xs text-on-surface-variant">Section D Perimeter Fence</p>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- Operational Capacity Block (Editorial Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-primary text-white rounded-[3rem] p-12 overflow-hidden relative">
+<div class="space-y-6 z-10">
+<span class="px-4 py-1.5 bg-white/10 rounded-full text-xs font-bold uppercase tracking-widest text-primary-fixed">Strategic Insight</span>
+<h2 class="text-3xl font-bold leading-tight">Your current plot inventory will sustain city requirements for the next 4.2 years.</h2>
+<p class="text-on-primary-container text-lg">Expansion planning for 'The Quiet Grove' extension is recommended by Q1 2025.</p>
+<button class="bg-white text-primary px-8 py-3 rounded-xl font-bold hover:bg-slate-100 transition-colors">Start Expansion Plan</button>
+</div>
+<div class="relative h-64 md:h-full min-h-[300px]">
+<img alt="Expansion Site" class="absolute inset-0 w-full h-full object-cover rounded-3xl opacity-40 mix-blend-lighten" data-alt="Dreamy landscape of a lush green cemetery with manicured lawn, old oak trees, and soft morning mist during sunrise, very peaceful" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCWgfflMvYizAnvru3JVFnwz2JZhMXmkRaTv_Znaw1lTKtnQo0chVvOAkmRcc-akl16HDQ910aQfIfa595ueHULQ4ITLEg42fwbG2OUasEyrLuCO2Gg7lAQPdTq_OcADkJuT-jaM_WVQokxVVcLZV2Zj7RXCluKykdEfuhz4YIHWzoge5JS8ZWiTWxBLWCPdzaV-yuKD1deK6PEKXn0_BzOMKKvRKyusDCZEO7zfTvrUXbwWBtNfu1OkCAnFMplDrq1SsMCbWktcHV-"/>
+</div>
+<!-- Background Texture decoration -->
+<div class="absolute -right-20 -top-20 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+</div>
+</div>
+<!-- Footer / Credits -->
+<footer class="mt-auto py-8 px-10 flex justify-between items-center bg-surface border-t border-slate-100">
+<p class="text-xs text-on-surface-variant font-medium uppercase tracking-tighter">© 2024 The Silent Steward • Australian Council Standard Management</p>
+<div class="flex gap-6">
+<a class="text-xs text-on-surface-variant hover:text-primary font-bold" href="#">Privacy Policy</a>
+<a class="text-xs text-on-surface-variant hover:text-primary font-bold" href="#">Accessibility Statement</a>
+<a class="text-xs text-on-surface-variant hover:text-primary font-bold" href="#">Council Portal</a>
+</div>
+</footer>
+</main>
+<!-- FAB for Global Actions -->
+<button class="fixed bottom-10 right-10 w-16 h-16 premium-gradient text-white rounded-full shadow-2xl flex items-center justify-center group hover:scale-110 transition-transform z-50">
+<span class="material-symbols-outlined text-3xl">add</span>
+<span class="absolute right-full mr-4 bg-primary text-white px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap text-sm font-bold shadow-lg">New Interment</span>
+</button>
+</body></html>

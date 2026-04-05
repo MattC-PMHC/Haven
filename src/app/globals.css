@@ -1,0 +1,417 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ─────────────────────────────────────────────────────────
+   HAVEN CEMETERY MANAGEMENT — "THE SILENT STEWARD"
+   Design Token System
+
+   Single source of truth for all visual values.
+   No hardcoded hex in components — everything references
+   these CSS custom properties via Tailwind's @theme inline.
+   ───────────────────────────────────────────────────────── */
+
+/* ─── Font: Public Sans ─── */
+@import "@fontsource-variable/public-sans";
+
+:root {
+  /* ── Haven Surface Hierarchy (tonal layering, no borders) ── */
+  --background: #f6fafe;
+  --foreground: #171c1f;
+  --foreground-secondary: #43474c;
+
+  --surface: #f6fafe;
+  --surface-container: #eaeef2;
+  --surface-container-low: #f0f4f8;
+  --surface-container-lowest: #ffffff;
+  --surface-container-high: #e4e9ed;
+  --surface-container-highest: #dfe3e7;
+  --surface-dim: #d6dade;
+  --surface-bright: #f6fafe;
+  --surface-variant: #dfe3e7;
+
+  /* ── Primary — Deep Navy ── */
+  --primary: #162839;
+  --primary-foreground: #ffffff;
+  --primary-container: #2c3e50;
+  --primary-fixed: #d1e4fb;
+  --primary-fixed-dim: #b5c8df;
+  --on-primary-container: #96a9be;
+  --on-primary-fixed: #091d2e;
+
+  /* ── Secondary — Muted Teal-Grey ── */
+  --secondary: #48626e;
+  --secondary-foreground: #ffffff;
+  --secondary-container: #cbe7f5;
+  --on-secondary-container: #4e6874;
+  --on-secondary-fixed: #021f29;
+
+  /* ── Tertiary — Warm Earth ── */
+  --tertiary: #362308;
+  --tertiary-foreground: #ffffff;
+  --tertiary-container: #4e381c;
+  --tertiary-fixed: #ffddb7;
+  --on-tertiary-container: #c1a17d;
+
+  /* ── Accent (mapped to primary for shadcn compat) ── */
+  --accent: #f0f4f8;
+  --accent-foreground: #171c1f;
+
+  /* ── Muted ── */
+  --muted: #eaeef2;
+  --muted-foreground: #43474c;
+
+  /* ── Card ── */
+  --card: #ffffff;
+  --card-foreground: #171c1f;
+
+  /* ── Popover ── */
+  --popover: #ffffff;
+  --popover-foreground: #171c1f;
+
+  /* ── Destructive ── */
+  --destructive: #ba1a1a;
+  --destructive-foreground: #ffffff;
+
+  /* ── Warning ── */
+  --warning: #92400e;
+  --warning-foreground: #ffffff;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  /* ── Success ── */
+  --success: #166534;
+  --success-foreground: #ffffff;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+
+  /* ── Info ── */
+  --info: #1d4ed8;
+  --info-foreground: #ffffff;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+
+  /* ── Border & Input (Ghost Border philosophy) ── */
+  --border: rgba(196, 198, 205, 0.20);
+  --input: rgba(196, 198, 205, 0.20);
+  --ring: #162839;
+  --outline-variant: #c4c6cd;
+
+  /* ── Sidebar (dark navy, always) ── */
+  --sidebar-bg: #162839;
+  --sidebar-text: rgba(255, 255, 255, 0.65);
+  --sidebar-text-active: #ffffff;
+  --sidebar-accent-bg: rgba(203, 231, 245, 0.15);
+  --sidebar-accent-text: #cbe7f5;
+  --sidebar-border: rgba(255, 255, 255, 0.07);
+
+  /* ── Radius ── */
+  --radius: 0.5rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 3rem;
+  --radius-full: 9999px;
+
+  /* ── Premium Gradient ── */
+  --gradient-primary: linear-gradient(135deg, #162839 0%, #2c3e50 100%);
+
+  /* ── Shadows (ambient, diffused — never heavy) ── */
+  --shadow-xs: 0 1px 2px 0 rgba(23, 28, 31, 0.03);
+  --shadow-sm: 0 1px 3px 0 rgba(23, 28, 31, 0.04);
+  --shadow-md: 0 4px 12px -2px rgba(23, 28, 31, 0.06);
+  --shadow-lg: 0 12px 40px rgba(23, 28, 31, 0.06);
+  --shadow-card: 0 1px 3px 0 rgba(23, 28, 31, 0.04), 0 0 0 1px rgba(23, 28, 31, 0.02);
+  --shadow-card-hover: 0 4px 12px -2px rgba(23, 28, 31, 0.08), 0 0 0 1px rgba(22, 40, 57, 0.08);
+  --shadow-focus: 0 0 0 3px rgba(22, 40, 57, 0.15);
+
+  /* ── Glass / Glassmorphism ── */
+  --glass-bg: rgba(255, 255, 255, 0.80);
+  --glass-blur: 12px;
+  --glass-border: rgba(196, 198, 205, 0.15);
+
+  /* ── Transitions ── */
+  --transition-fast: 120ms;
+  --transition-normal: 200ms;
+  --transition-slow: 300ms;
+
+  /* ── Spacing Rhythm (4px base grid) ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* ── Typography Scale ── */
+  --text-display-lg: 2.25rem;
+  --text-display-md: 1.875rem;
+  --text-display-sm: 1.5rem;
+  --text-headline-lg: 1.5rem;
+  --text-headline-sm: 1.25rem;
+  --text-body-lg: 1rem;
+  --text-body-md: 0.875rem;
+  --text-label-lg: 0.875rem;
+  --text-label-md: 0.75rem;
+  --text-label-sm: 0.6875rem;
+
+  /* ── Plot Status Colors ── */
+  --status-available: #16a34a;
+  --status-available-bg: #f0fdf4;
+  --status-available-border: #bbf7d0;
+
+  --status-reserved: #2563eb;
+  --status-reserved-bg: #eff6ff;
+  --status-reserved-border: #bfdbfe;
+
+  --status-occupied: #d97706;
+  --status-occupied-bg: #fffbeb;
+  --status-occupied-border: #fde68a;
+
+  --status-restricted: #dc2626;
+  --status-restricted-bg: #fef2f2;
+  --status-restricted-border: #fecaca;
+
+  --status-maintenance: #7c3aed;
+  --status-maintenance-bg: #f5f3ff;
+  --status-maintenance-border: #ddd6fe;
+
+  --status-expired: #64748b;
+  --status-expired-bg: #f8fafc;
+  --status-expired-border: #e2e8f0;
+
+  /* ── Chart Colors ── */
+  --chart-1: #162839;
+  --chart-2: #48626e;
+  --chart-3: #2c3e50;
+  --chart-4: #362308;
+  --chart-5: #cbe7f5;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TAILWIND v4 THEME REGISTRATION
+   Maps CSS custom properties to Tailwind utility classes.
+   ───────────────────────────────────────────────────────── */
+@theme inline {
+  --font-sans: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  --font-display: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+
+  --color-surface: var(--surface);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-variant: var(--surface-variant);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-container: var(--primary-container);
+  --color-primary-fixed: var(--primary-fixed);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-fixed: var(--on-secondary-fixed);
+
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-tertiary-container: var(--tertiary-container);
+  --color-tertiary-fixed: var(--tertiary-fixed);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-text-active: var(--sidebar-text-active);
+  --color-sidebar-accent-bg: var(--sidebar-accent-bg);
+  --color-sidebar-accent-text: var(--sidebar-accent-text);
+
+  --color-status-available: var(--status-available);
+  --color-status-available-bg: var(--status-available-bg);
+  --color-status-reserved: var(--status-reserved);
+  --color-status-reserved-bg: var(--status-reserved-bg);
+  --color-status-occupied: var(--status-occupied);
+  --color-status-occupied-bg: var(--status-occupied-bg);
+  --color-status-restricted: var(--status-restricted);
+  --color-status-restricted-bg: var(--status-restricted-bg);
+  --color-status-maintenance: var(--status-maintenance);
+  --color-status-maintenance-bg: var(--status-maintenance-bg);
+  --color-status-expired: var(--status-expired);
+  --color-status-expired-bg: var(--status-expired-bg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+}
+
+/* ─────────────────────────────────────────────────────────
+   BASE BODY STYLES
+   ───────────────────────────────────────────────────────── */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: "Public Sans Variable", "Public Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Heading weight & tracking ── */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ── Premium Gradient (for CTAs and hero elements) ── */
+.premium-gradient {
+  background: var(--gradient-primary);
+}
+
+/* ── Glass Surface (for floating elements — top bar, legend overlays) ── */
+.surface-glass {
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+/* ── Card hover lift ── */
+.card-interactive {
+  transition: transform var(--transition-normal) ease,
+              box-shadow var(--transition-normal) ease;
+}
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ── Shadow utilities ── */
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+.shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+.shadow-ambient {
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Staggered entrance animation ── */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+.stagger-6 { animation-delay: 300ms; }
+
+/* ── Skeleton shimmer ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--surface-container) 25%,
+    var(--surface-container-lowest) 50%,
+    var(--surface-container) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+/* ── Focus ring ── */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  box-shadow: var(--shadow-focus);
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── No-scrollbar utility ── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Timeline connector ── */
+.timeline-line {
+  width: 1px;
+  background: var(--surface-container-high);
+}
+
+/* ── Attention row tints (for dashboard tables) ── */
+.attention-overdue { background-color: color-mix(in srgb, var(--destructive) 3%, transparent); }
+.attention-at-risk { background-color: color-mix(in srgb, var(--warning) 3%, transparent); }
