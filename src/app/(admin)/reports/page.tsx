@@ -24,7 +24,7 @@ const reports = [
 
 export default function ReportsPage() {
   return (
-    <div className="p-10 max-w-[1600px] mx-auto w-full space-y-8">
+    <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">
       {/* ── Header ── */}
       <div className="animate-fade-up">
         <h2 className="text-3xl font-extrabold text-primary tracking-tight mb-1">

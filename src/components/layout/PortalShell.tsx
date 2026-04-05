@@ -108,13 +108,13 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all",
+                      "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
                       isActive
                         ? "bg-white/15 text-white font-medium"
                         : "text-white/70 hover:text-white hover:bg-white/10"
                     )}
                   >
-                    <item.icon className="size-4" />
+                    <item.icon className="size-4" aria-hidden="true" />
                     {item.label}
                   </Link>
                 )
@@ -127,8 +127,8 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             <span className="text-white/60 text-sm hidden sm:inline">
               {portal?.role ?? "Portal"}
             </span>
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
-              <LogOut className="size-4" />
+            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10" aria-label="Log out">
+              <LogOut className="size-4" aria-hidden="true" />
             </Button>
           </div>
         </div>
@@ -147,13 +147,13 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
                     isActive
                       ? "bg-white/15 text-white font-medium"
                       : "text-white/60 hover:text-white hover:bg-white/10"
                   )}
                 >
-                  <item.icon className="size-3.5" />
+                  <item.icon className="size-3.5" aria-hidden="true" />
                   {item.label}
                 </Link>
               )

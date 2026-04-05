@@ -8,7 +8,7 @@ import { CemeteryForm } from "@/components/records/CemeteryForm"
 
 export default function NewCemeteryPage() {
   return (
-    <div className="p-10 max-w-[900px] mx-auto w-full space-y-8">
+    <div className="p-4 md:p-10 max-w-[900px] mx-auto w-full space-y-8">
       {/* ── Breadcrumb / Back ── */}
       <div className="animate-fade-up">
         <Link

@@ -123,7 +123,7 @@ export function Sidebar() {
       </div>
 
       {/* ── Scrollable nav area ── */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-4 no-scrollbar">
+      <nav aria-label="Main navigation" className="flex-1 overflow-y-auto px-3 pb-4 no-scrollbar">
         {navGroups.map((group, gi) => (
           <div key={gi} className={gi > 0 ? "mt-5" : ""}>
             {/* Group label */}
@@ -161,13 +161,13 @@ export function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all",
+                      "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent-text/50",
                       isActive
                         ? "text-sidebar-text-active bg-sidebar-accent-bg font-medium border-r-2 border-sidebar-accent-text"
                         : "text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-accent-bg/50"
                     )}
                   >
-                    <item.icon className="size-4 shrink-0" />
+                    <item.icon className="size-4 shrink-0" aria-hidden="true" />
                     <span>{item.label}</span>
                   </Link>
                 )
@@ -182,22 +182,22 @@ export function Sidebar() {
         <Link
           href="/settings"
           className={cn(
-            "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all",
+            "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent-text/50",
             pathname.startsWith("/settings")
               ? "text-sidebar-text-active bg-sidebar-accent-bg font-medium"
               : "text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-accent-bg/50"
           )}
         >
-          <Settings className="size-4 shrink-0" />
+          <Settings className="size-4 shrink-0" aria-hidden="true" />
           <span>Settings</span>
         </Link>
 
         <form action={logoutAction}>
           <button
             type="submit"
-            className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-accent-bg/50 transition-all"
+            className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm text-sidebar-text hover:text-sidebar-text-active hover:bg-sidebar-accent-bg/50 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent-text/50"
           >
-            <LogOut className="size-4 shrink-0" />
+            <LogOut className="size-4 shrink-0" aria-hidden="true" />
             <span>Log Out</span>
           </button>
         </form>

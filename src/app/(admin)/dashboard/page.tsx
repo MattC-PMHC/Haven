@@ -22,7 +22,7 @@ import { ActivityTimeline } from "@/components/dashboard/ActivityTimeline"
 
 export default function DashboardPage() {
   return (
-    <div className="p-10 max-w-[1600px] mx-auto w-full space-y-8">
+    <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">
       {/* ── Hero Header ── */}
       <div className="flex justify-between items-end mb-2 animate-fade-up">
         <div className="max-w-2xl">

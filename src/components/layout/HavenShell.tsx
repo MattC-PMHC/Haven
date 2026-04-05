@@ -7,14 +7,11 @@
 // check happens in the server-side (admin)/layout.tsx before this
 // component ever renders.
 //
-// Structure:
-//   ┌──────────┬──────────────────────────────┐
-//   │          │  TopBar (sticky)              │
-//   │ Sidebar  ├──────────────────────────────┤
-//   │ (fixed)  │  Main content (children)     │
-//   │          │                              │
-//   └──────────┴──────────────────────────────┘
+// On mobile (<768px) the sidebar is hidden behind a hamburger toggle
+// with an overlay backdrop. On desktop the sidebar is always visible.
 
+import { useState, useCallback, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { Sidebar } from "./Sidebar"
 import { TopBar } from "./TopBar"
 
@@ -31,21 +28,57 @@ export function HavenShell({
   userRole,
   avatarUrl,
 }: HavenShellProps) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false)
+  }, [pathname])
+
+  const toggleMobile = useCallback(() => {
+    setMobileOpen((prev) => !prev)
+  }, [])
+
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar is fixed-position, so it doesn't scroll with the page */}
-      <Sidebar />
+      {/* Skip to content link — visible only when focused via keyboard */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-medium focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
 
-      {/* Main area starts after the sidebar's 256px (w-64) width */}
-      <div className="ml-64 flex-1 flex flex-col min-h-screen">
+      {/* Mobile overlay backdrop */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 md:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar — hidden on mobile by default, shown via mobileOpen state */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 ease-out md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
+
+      {/* Main area — full width on mobile, offset on desktop */}
+      <div className="md:ml-64 flex-1 flex flex-col min-h-screen w-full">
         <TopBar
           userName={userName}
           userRole={userRole}
           avatarUrl={avatarUrl}
+          onMobileMenuToggle={toggleMobile}
         />
 
-        {/* Page content — each admin page renders here */}
-        <main className="flex-1">{children}</main>
+        {/* Page content */}
+        <main id="main-content" className="flex-1">{children}</main>
       </div>
     </div>
   )

@@ -9,7 +9,7 @@ import { mockCemeteries } from "@/lib/mock/cemeteries"
 
 export default function NewBookingPage() {
   return (
-    <div className="p-10 max-w-[900px] mx-auto w-full space-y-8">
+    <div className="p-4 md:p-10 max-w-[900px] mx-auto w-full space-y-8">
       <div className="animate-fade-up">
         <Link
           href="/bookings"

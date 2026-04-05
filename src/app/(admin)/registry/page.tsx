@@ -42,7 +42,7 @@ export default function RegistryPage() {
   const stats = getDeceasedStats()
 
   return (
-    <div className="p-10 max-w-[1600px] mx-auto w-full space-y-8">
+    <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">
       {/* ── Header ── */}
       <div className="flex justify-between items-end animate-fade-up">
         <div>
