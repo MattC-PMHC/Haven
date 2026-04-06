@@ -1,8 +1,7 @@
 // Login page — server component that reads search params, then renders
-// the client-side login form. This avoids the useSearchParams() Suspense
-// requirement.
+// the split-screen auth/landing page with Sign In + Demo Users tabs.
 
-import { LoginForm } from "./login-form"
+import { SplitAuthPage } from "./split-auth-page"
 
 export default async function LoginPage({
   searchParams,
@@ -11,7 +10,7 @@ export default async function LoginPage({
 }) {
   const params = await searchParams
   return (
-    <LoginForm
+    <SplitAuthPage
       redirectTo={params.redirect || "/dashboard"}
       callbackError={params.error}
     />
