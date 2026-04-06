@@ -7,6 +7,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
+import { demoSignIn } from "./demo-signin-action"
 import { toast } from "sonner"
 import {
   Shield,
@@ -97,18 +98,14 @@ export function DemoUserPicker() {
     setSigningIn(user.email)
 
     try {
-      const res = await fetch("/api/auth/demo-signin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email }),
-      })
+      // Server Action — runs on the server, no API route needed
+      const result = await demoSignIn(user.email)
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || "Sign-in failed")
+      if (!result.success) {
+        throw new Error(result.error)
       }
 
-      const { access_token, refresh_token } = await res.json()
+      const { access_token, refresh_token } = result
 
       // Set the session on the browser Supabase client
       const supabase = createSupabaseBrowserClient()
