@@ -1,14 +1,12 @@
 "use server"
 
 // Server actions for cemetery CRUD.
-//
-// Currently uses mock data — will connect to Supabase later.
-// Each action validates with zod and returns a result object
-// (same pattern as auth actions).
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { cemeterySchema } from "@/lib/schemas/cemeteries"
+import { getSession } from "@/lib/auth/get-session"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export interface ActionResult {
   error?: string
@@ -20,6 +18,11 @@ export async function createCemeteryAction(
   _prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) {
+    return { error: "You must be logged in." }
+  }
+
   const raw = {
     name: formData.get("name") as string,
     address: formData.get("address") as string,
@@ -40,9 +43,28 @@ export async function createCemeteryAction(
     }
   }
 
-  // TODO: Insert into Supabase + write audit log
-  // For now, just simulate success
-  console.log("Creating cemetery:", result.data)
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase.from("cemeteries").insert({
+    tenant_id: session.tenantId,
+    name: result.data.name,
+    address: result.data.address || null,
+    suburb: result.data.suburb || null,
+    state: result.data.state,
+    postcode: result.data.postcode || null,
+    status: result.data.status,
+    opening_hours: result.data.opening_hours || null,
+    phone: result.data.phone || null,
+    email: result.data.email || null,
+    notes: result.data.notes || null,
+    created_by: session.user.id,
+    updated_by: session.user.id,
+  })
+
+  if (error) {
+    console.error("createCemeteryAction error:", error)
+    return { error: "Failed to create cemetery. Please try again." }
+  }
 
   revalidatePath("/settings/cemeteries")
   redirect("/settings/cemeteries")
@@ -52,6 +74,11 @@ export async function updateCemeteryAction(
   _prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) {
+    return { error: "You must be logged in." }
+  }
+
   const id = formData.get("id") as string
 
   const raw = {
@@ -74,8 +101,29 @@ export async function updateCemeteryAction(
     }
   }
 
-  // TODO: Update in Supabase + write audit log
-  console.log("Updating cemetery:", id, result.data)
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase
+    .from("cemeteries")
+    .update({
+      name: result.data.name,
+      address: result.data.address || null,
+      suburb: result.data.suburb || null,
+      state: result.data.state,
+      postcode: result.data.postcode || null,
+      status: result.data.status,
+      opening_hours: result.data.opening_hours || null,
+      phone: result.data.phone || null,
+      email: result.data.email || null,
+      notes: result.data.notes || null,
+      updated_by: session.user.id,
+    })
+    .eq("id", id)
+
+  if (error) {
+    console.error("updateCemeteryAction error:", error)
+    return { error: "Failed to update cemetery. Please try again." }
+  }
 
   revalidatePath(`/settings/cemeteries/${id}`)
   revalidatePath("/settings/cemeteries")
@@ -85,11 +133,20 @@ export async function updateCemeteryAction(
 export async function deleteCemeteryAction(
   formData: FormData
 ): Promise<void> {
-  const id = formData.get("id") as string
+  const session = await getSession()
+  if (!session) return
 
-  // TODO: Delete from Supabase + write audit log
-  // Should check for existing sections/plots before deletion
-  console.log("Deleting cemetery:", id)
+  const id = formData.get("id") as string
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase
+    .from("cemeteries")
+    .delete()
+    .eq("id", id)
+
+  if (error) {
+    console.error("deleteCemeteryAction error:", error)
+  }
 
   revalidatePath("/settings/cemeteries")
   redirect("/settings/cemeteries")

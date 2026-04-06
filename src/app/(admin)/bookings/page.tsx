@@ -1,7 +1,6 @@
 // Bookings list — shows all interment bookings grouped by status.
 //
-// Displays as a table with status-colored badges.
-// Links to create new booking.
+// Fetches real data from Supabase via the query layer.
 
 import Link from "next/link"
 import { Plus, CalendarCheck } from "lucide-react"
@@ -15,8 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mockBookings, getBookingStats } from "@/lib/mock/deceased"
-import { mockCemeteries } from "@/lib/mock/cemeteries"
+import { getBookings, getBookingStats } from "@/lib/queries/bookings"
+import { getCemeteries } from "@/lib/queries/cemeteries"
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—"
@@ -53,13 +52,16 @@ const bookingTypeLabels: Record<string, string> = {
   grounds_maintenance: "Grounds Maintenance",
 }
 
-export default function BookingsPage() {
-  const bookings = mockBookings
-  const stats = getBookingStats()
+export default async function BookingsPage() {
+  const [bookings, stats, cemeteries] = await Promise.all([
+    getBookings(),
+    getBookingStats(),
+    getCemeteries(),
+  ])
 
   // Cemetery name lookup
   const cemeteryNames: Record<string, string> = {}
-  for (const c of mockCemeteries) {
+  for (const c of cemeteries) {
     cemeteryNames[c.id] = c.name
   }
 
@@ -123,65 +125,77 @@ export default function BookingsPage() {
 
       {/* ── Table ── */}
       <div className="bg-surface-container-lowest rounded-xl shadow-card animate-fade-up stagger-2">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-6">Deceased</TableHead>
-              <TableHead>Cemetery</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Requested Date</TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sorted.map((booking, i) => (
-              <TableRow
-                key={booking.id}
-                className={i % 2 === 1 ? "bg-surface-container-low/50" : ""}
-              >
-                <TableCell className="pl-6">
-                  <div className="flex items-center gap-2">
-                    <CalendarCheck className="size-4 text-muted-foreground shrink-0" />
-                    <span className="font-medium">{booking.deceased_name ?? "—"}</span>
-                  </div>
-                  {booking.special_requirements && (
-                    <p className="text-xs text-muted-foreground mt-0.5 ml-6 line-clamp-1">
-                      {booking.special_requirements}
-                    </p>
-                  )}
-                </TableCell>
-
-                <TableCell className="text-sm text-muted-foreground">
-                  {cemeteryNames[booking.cemetery_id] ?? "—"}
-                </TableCell>
-
-                <TableCell className="text-sm">
-                  {bookingTypeLabels[booking.booking_type] ?? booking.booking_type}
-                </TableCell>
-
-                <TableCell className="text-sm">
-                  {formatDate(booking.requested_date)}
-                </TableCell>
-
-                <TableCell className="text-sm text-muted-foreground">
-                  {booking.requested_time ?? "—"}
-                </TableCell>
-
-                <TableCell className="text-sm text-muted-foreground">
-                  {booking.duration_minutes} min
-                </TableCell>
-
-                <TableCell>
-                  <Badge className={bookingStatusStyles[booking.status] ?? ""}>
-                    {bookingStatusLabels[booking.status] ?? booking.status}
-                  </Badge>
-                </TableCell>
+        {sorted.length === 0 ? (
+          <div className="p-12 text-center">
+            <CalendarCheck className="size-10 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-muted-foreground">No bookings yet.</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">
+              Create your first booking to get started.
+            </p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Deceased</TableHead>
+                <TableHead>Cemetery</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Requested Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Duration</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {sorted.map((booking, i) => (
+                <TableRow
+                  key={booking.id}
+                  className={`cursor-pointer ${i % 2 === 1 ? "bg-surface-container-low/50" : ""}`}
+                >
+                  <TableCell className="pl-6">
+                    <Link href={`/bookings/${booking.id}`} className="block">
+                      <div className="flex items-center gap-2">
+                        <CalendarCheck className="size-4 text-muted-foreground shrink-0" />
+                        <span className="font-medium">{booking.deceased_name ?? "—"}</span>
+                      </div>
+                      {booking.special_requirements && (
+                        <p className="text-xs text-muted-foreground mt-0.5 ml-6 line-clamp-1">
+                          {booking.special_requirements}
+                        </p>
+                      )}
+                    </Link>
+                  </TableCell>
+
+                  <TableCell className="text-sm text-muted-foreground">
+                    {cemeteryNames[booking.cemetery_id] ?? "—"}
+                  </TableCell>
+
+                  <TableCell className="text-sm">
+                    {bookingTypeLabels[booking.booking_type] ?? booking.booking_type}
+                  </TableCell>
+
+                  <TableCell className="text-sm">
+                    {formatDate(booking.requested_date)}
+                  </TableCell>
+
+                  <TableCell className="text-sm text-muted-foreground">
+                    {booking.requested_time ?? "—"}
+                  </TableCell>
+
+                  <TableCell className="text-sm text-muted-foreground">
+                    {booking.duration_minutes} min
+                  </TableCell>
+
+                  <TableCell>
+                    <Badge className={bookingStatusStyles[booking.status] ?? ""}>
+                      {bookingStatusLabels[booking.status] ?? booking.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </div>
     </div>
   )

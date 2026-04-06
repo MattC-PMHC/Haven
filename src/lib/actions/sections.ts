@@ -1,11 +1,11 @@
 "use server"
 
 // Server actions for section CRUD.
-//
-// Currently uses mock data — will connect to Supabase later.
 
 import { revalidatePath } from "next/cache"
 import { sectionSchema } from "@/lib/schemas/cemeteries"
+import { getSession } from "@/lib/auth/get-session"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export interface ActionResult {
   error?: string
@@ -17,6 +17,11 @@ export async function createSectionAction(
   _prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) {
+    return { error: "You must be logged in." }
+  }
+
   const cemeteryId = formData.get("cemetery_id") as string
 
   const raw = {
@@ -34,8 +39,24 @@ export async function createSectionAction(
     }
   }
 
-  // TODO: Insert into Supabase + write audit log
-  console.log("Creating section for cemetery:", cemeteryId, result.data)
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase.from("sections").insert({
+    tenant_id: session.tenantId,
+    cemetery_id: cemeteryId,
+    name: result.data.name,
+    code: result.data.code || null,
+    section_type: result.data.section_type,
+    status: result.data.status,
+    notes: result.data.notes || null,
+    created_by: session.user.id,
+    updated_by: session.user.id,
+  })
+
+  if (error) {
+    console.error("createSectionAction error:", error)
+    return { error: "Failed to create section. Please try again." }
+  }
 
   revalidatePath(`/settings/cemeteries/${cemeteryId}`)
   return { success: "Section created successfully." }
@@ -45,6 +66,11 @@ export async function updateSectionAction(
   _prevState: ActionResult | null,
   formData: FormData
 ): Promise<ActionResult> {
+  const session = await getSession()
+  if (!session) {
+    return { error: "You must be logged in." }
+  }
+
   const id = formData.get("id") as string
   const cemeteryId = formData.get("cemetery_id") as string
 
@@ -63,8 +89,24 @@ export async function updateSectionAction(
     }
   }
 
-  // TODO: Update in Supabase + write audit log
-  console.log("Updating section:", id, result.data)
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase
+    .from("sections")
+    .update({
+      name: result.data.name,
+      code: result.data.code || null,
+      section_type: result.data.section_type,
+      status: result.data.status,
+      notes: result.data.notes || null,
+      updated_by: session.user.id,
+    })
+    .eq("id", id)
+
+  if (error) {
+    console.error("updateSectionAction error:", error)
+    return { error: "Failed to update section. Please try again." }
+  }
 
   revalidatePath(`/settings/cemeteries/${cemeteryId}`)
   return { success: "Section updated successfully." }
@@ -73,12 +115,22 @@ export async function updateSectionAction(
 export async function deleteSectionAction(
   formData: FormData
 ): Promise<void> {
+  const session = await getSession()
+  if (!session) return
+
   const id = formData.get("id") as string
   const cemeteryId = formData.get("cemetery_id") as string
 
-  // TODO: Delete from Supabase + write audit log
-  // Should check for existing plots before deletion
-  console.log("Deleting section:", id)
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase
+    .from("sections")
+    .delete()
+    .eq("id", id)
+
+  if (error) {
+    console.error("deleteSectionAction error:", error)
+  }
 
   revalidatePath(`/settings/cemeteries/${cemeteryId}`)
 }

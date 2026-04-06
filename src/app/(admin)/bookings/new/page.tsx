@@ -1,13 +1,15 @@
 // Create new booking page.
 //
-// Uses a form with cemetery/plot selection, booking type, date/time.
+// Fetches active cemeteries from Supabase for the dropdown.
 
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { BookingForm } from "@/components/records/BookingForm"
-import { mockCemeteries } from "@/lib/mock/cemeteries"
+import { getActiveCemeteries } from "@/lib/queries/cemeteries"
 
-export default function NewBookingPage() {
+export default async function NewBookingPage() {
+  const cemeteries = await getActiveCemeteries()
+
   return (
     <div className="p-4 md:p-10 max-w-[900px] mx-auto w-full space-y-8">
       <div className="animate-fade-up">
@@ -27,7 +29,7 @@ export default function NewBookingPage() {
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl shadow-card p-8 animate-fade-up stagger-1">
-        <BookingForm cemeteries={mockCemeteries.filter((c) => c.status === "active")} />
+        <BookingForm cemeteries={cemeteries} />
       </div>
     </div>
   )
