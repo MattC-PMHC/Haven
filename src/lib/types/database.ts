@@ -471,6 +471,16 @@ export interface AuditLog {
   created_at: string;
 }
 
+export interface BookingNote {
+  id: string;
+  tenant_id: string;
+  booking_id: string;
+  author_id: string;
+  content: string;
+  is_internal: boolean;
+  created_at: string;
+}
+
 export interface Notification {
   id: string;
   tenant_id: string;
