@@ -59,8 +59,15 @@ DECLARE
   action_type TEXT;
   t_id UUID;
 BEGIN
-  -- Determine the action
-  action_type := TG_OP;
+  -- Map PostgreSQL's TG_OP to our check-constraint action names
+  -- (TG_OP gives 'INSERT'/'UPDATE'/'DELETE', constraint expects 'create'/'update'/'delete')
+  IF TG_OP = 'INSERT' THEN
+    action_type := 'create';
+  ELSIF TG_OP = 'DELETE' THEN
+    action_type := 'delete';
+  ELSE
+    action_type := 'update';
+  END IF;
 
   -- Build the changes JSON
   IF TG_OP = 'DELETE' THEN
@@ -90,7 +97,7 @@ BEGIN
     t_id,
     TG_TABLE_NAME,
     CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END,
-    lower(action_type),
+    action_type,
     auth.uid(),
     changes_json,
     now()
