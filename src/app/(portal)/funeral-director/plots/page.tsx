@@ -1,8 +1,9 @@
 // Funeral Director — Plot Availability Search
 //
-// Allows FDs to search available plots across cemeteries.
+// Shows available plots from Supabase with cemetery/section names.
 // Map view is deferred (M5 skipped), so this shows a table view.
 
+import { redirect } from "next/navigation"
 import { Search, MapPin } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,8 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mockPlots, sectionToCemetery } from "@/lib/mock/plots"
-import { mockSections } from "@/lib/mock/cemeteries"
+import { getSession } from "@/lib/auth/get-session"
+import { getAvailablePlots } from "@/lib/queries/fd-portal"
 
 const plotTypeLabels: Record<string, string> = {
   lawn_single: "Lawn Single",
@@ -33,14 +34,11 @@ const plotTypeLabels: Record<string, string> = {
   war_grave: "War Grave",
 }
 
-export default function FDPlotSearchPage() {
-  const available = mockPlots.filter((p) => p.status === "available")
+export default async function FDPlotSearchPage() {
+  const session = await getSession()
+  if (!session) redirect("/login")
 
-  // Build section name lookup
-  const sectionNames: Record<string, string> = {}
-  for (const s of mockSections) {
-    sectionNames[s.id] = s.name
-  }
+  const available = await getAvailablePlots()
 
   return (
     <div className="p-6 md:p-10 space-y-8">
@@ -72,50 +70,57 @@ export default function FDPlotSearchPage() {
 
       {/* ── Table ── */}
       <div className="bg-surface-container-lowest rounded-xl shadow-card animate-fade-up stagger-3">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="pl-6">Plot Number</TableHead>
-              <TableHead>Cemetery</TableHead>
-              <TableHead>Section</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Capacity</TableHead>
-              <TableHead className="pr-6">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {available.slice(0, 20).map((plot, i) => (
-              <TableRow
-                key={plot.id}
-                className={i % 2 === 1 ? "bg-surface-container-low/50" : ""}
-              >
-                <TableCell className="pl-6 font-medium font-mono">
-                  {plot.plot_number}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {sectionToCemetery[plot.section_id] ?? "—"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {sectionNames[plot.section_id] ?? "—"}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {plotTypeLabels[plot.plot_type] ?? plot.plot_type}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {plot.capacity}
-                </TableCell>
-                <TableCell className="pr-6">
-                  <Badge className="bg-success-bg text-success border-success-border">
-                    Available
-                  </Badge>
-                </TableCell>
+        {available.length === 0 ? (
+          <div className="p-12 text-center">
+            <MapPin className="size-10 text-muted-foreground/40 mx-auto mb-3" />
+            <p className="text-muted-foreground">No available plots found.</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="pl-6">Plot Number</TableHead>
+                <TableHead>Cemetery</TableHead>
+                <TableHead>Section</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Capacity</TableHead>
+                <TableHead className="pr-6">Status</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {available.length > 20 && (
+            </TableHeader>
+            <TableBody>
+              {available.map((plot, i) => (
+                <TableRow
+                  key={plot.id}
+                  className={i % 2 === 1 ? "bg-surface-container-low/50" : ""}
+                >
+                  <TableCell className="pl-6 font-medium font-mono">
+                    {plot.plot_number}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {plot.cemetery_name}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {plot.section_name}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {plotTypeLabels[plot.plot_type] ?? plot.plot_type}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {plot.capacity}
+                  </TableCell>
+                  <TableCell className="pr-6">
+                    <Badge className="bg-success-bg text-success border-success-border">
+                      Available
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+        {available.length >= 50 && (
           <div className="px-6 py-3 text-sm text-muted-foreground text-center border-t border-border">
-            Showing 20 of {available.length} available plots
+            Showing first 50 available plots
           </div>
         )}
       </div>

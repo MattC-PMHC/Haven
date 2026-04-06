@@ -1,13 +1,18 @@
 // Funeral Director Portal — Dashboard
 //
 // Shows upcoming bookings, pending requests, and quick actions.
-// Uses mock booking data filtered for this portal's context.
+// Fetches real data from Supabase filtered by the FD's contact record.
 
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { CalendarCheck, Plus, Clock, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { mockBookings } from "@/lib/mock/deceased"
+import { getSession } from "@/lib/auth/get-session"
+import {
+  getFDContactForUser,
+  getBookingsForFDContact,
+} from "@/lib/queries/fd-portal"
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—"
@@ -35,15 +40,40 @@ const statusLabels: Record<string, string> = {
   cancelled: "Cancelled",
 }
 
-export default function FuneralDirectorDashboard() {
-  // In production, filter by FD's contact ID. For mock, show all.
-  const upcoming = mockBookings.filter(
+export default async function FuneralDirectorDashboard() {
+  const session = await getSession()
+  if (!session) redirect("/login")
+
+  const fdContact = await getFDContactForUser(session.user.email)
+
+  // If no contact record found, show a helpful message
+  if (!fdContact) {
+    return (
+      <div className="p-6 md:p-10 space-y-6 text-center">
+        <h2 className="text-2xl font-bold text-primary">Account Not Linked</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Your login isn&apos;t linked to a funeral director contact record yet.
+          Please contact the council administrator to set up your account.
+        </p>
+      </div>
+    )
+  }
+
+  const bookings = await getBookingsForFDContact(fdContact.id)
+
+  const upcoming = bookings.filter(
     (b) => b.status === "pending" || b.status === "confirmed"
   )
-  const recent = mockBookings
+  const recent = bookings
     .filter((b) => b.status === "completed")
-    .slice(-3)
-    .reverse()
+    .slice(0, 3)
+
+  const stats = {
+    pending: bookings.filter((b) => b.status === "pending").length,
+    confirmed: bookings.filter((b) => b.status === "confirmed").length,
+    completed: bookings.filter((b) => b.status === "completed").length,
+    total: bookings.length,
+  }
 
   return (
     <div className="p-6 md:p-10 space-y-8">
@@ -69,25 +99,19 @@ export default function FuneralDirectorDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-up stagger-1">
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
           <p className="text-muted-foreground text-sm font-medium">Pending</p>
-          <p className="text-2xl font-bold text-warning">
-            {mockBookings.filter((b) => b.status === "pending").length}
-          </p>
+          <p className="text-2xl font-bold text-warning">{stats.pending}</p>
         </div>
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
           <p className="text-muted-foreground text-sm font-medium">Confirmed</p>
-          <p className="text-2xl font-bold text-info">
-            {mockBookings.filter((b) => b.status === "confirmed").length}
-          </p>
+          <p className="text-2xl font-bold text-info">{stats.confirmed}</p>
         </div>
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
           <p className="text-muted-foreground text-sm font-medium">Completed</p>
-          <p className="text-2xl font-bold text-success">
-            {mockBookings.filter((b) => b.status === "completed").length}
-          </p>
+          <p className="text-2xl font-bold text-success">{stats.completed}</p>
         </div>
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
           <p className="text-muted-foreground text-sm font-medium">Total</p>
-          <p className="text-2xl font-bold text-primary">{mockBookings.length}</p>
+          <p className="text-2xl font-bold text-primary">{stats.total}</p>
         </div>
       </div>
 
@@ -133,17 +157,23 @@ export default function FuneralDirectorDashboard() {
           <h3 className="font-semibold text-foreground">Recently Completed</h3>
         </div>
         <div className="divide-y divide-border">
-          {recent.map((booking) => (
-            <div key={booking.id} className="px-5 py-4 flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">{booking.deceased_name ?? "—"}</p>
-                <p className="text-sm text-muted-foreground">{formatDate(booking.confirmed_date)}</p>
-              </div>
-              <Badge className="bg-success-bg text-success border-success-border">
-                Completed
-              </Badge>
+          {recent.length === 0 ? (
+            <div className="px-5 py-8 text-center text-muted-foreground text-sm">
+              No completed bookings yet.
             </div>
-          ))}
+          ) : (
+            recent.map((booking) => (
+              <div key={booking.id} className="px-5 py-4 flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-foreground">{booking.deceased_name ?? "—"}</p>
+                  <p className="text-sm text-muted-foreground">{formatDate(booking.confirmed_date)}</p>
+                </div>
+                <Badge className="bg-success-bg text-success border-success-border">
+                  Completed
+                </Badge>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

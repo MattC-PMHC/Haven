@@ -1,18 +1,26 @@
 // Funeral Director — Document Submission
 //
-// Allows FDs to view/upload documents related to their bookings.
-// Upload is a placeholder until Supabase Storage is connected.
+// Shows documents linked to the FD's bookings from Supabase.
+// Upload is a placeholder until Supabase Storage is connected (M16).
 
+import { redirect } from "next/navigation"
 import { FileText } from "lucide-react"
 import { DocumentUpload } from "@/components/records/DocumentUpload"
 import { DocumentList } from "@/components/records/DocumentList"
-import { mockDocuments } from "@/lib/mock/documents"
+import { getSession } from "@/lib/auth/get-session"
+import {
+  getFDContactForUser,
+  getDocumentsForFD,
+} from "@/lib/queries/fd-portal"
 
-export default function FDDocumentsPage() {
-  // In production, filter by FD's contact ID. For mock, show a few.
-  const fdDocs = mockDocuments.filter(
-    (d) => d.category === "statutory" || d.category === "correspondence"
-  )
+export default async function FDDocumentsPage() {
+  const session = await getSession()
+  if (!session) redirect("/login")
+
+  const fdContact = await getFDContactForUser(session.user.email)
+
+  // If no contact record, show empty state
+  const fdDocs = fdContact ? await getDocumentsForFD(fdContact.id) : []
 
   return (
     <div className="p-6 md:p-10 space-y-8">
