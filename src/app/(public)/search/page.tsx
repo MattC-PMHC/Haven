@@ -2,17 +2,16 @@
 
 // Public Portal — Grave Search
 //
-// Search for deceased persons by name or date.
-// No authentication required. Uses mock data.
+// Search for deceased persons by name.
+// No authentication required. Uses real Supabase queries via server action.
 
-import { useState, useMemo } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Search, MapPin, Calendar, User } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { mockDeceased } from "@/lib/mock/deceased"
-import { mockInterments } from "@/lib/mock/deceased"
-import { mockPlots, sectionToCemetery } from "@/lib/mock/plots"
+import { searchDeceasedAction } from "./search-action"
+import type { PublicDeceasedResult } from "@/lib/queries/public-portal"
 
-function formatDate(dateStr: string | null): string {
+function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return "—"
   return new Date(dateStr).toLocaleDateString("en-AU", {
     day: "numeric",
@@ -23,43 +22,33 @@ function formatDate(dateStr: string | null): string {
 
 export default function PublicSearchPage() {
   const [query, setQuery] = useState("")
+  const [results, setResults] = useState<PublicDeceasedResult[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
 
-  const results = useMemo(() => {
-    if (query.length < 2) return []
-    const q = query.toLowerCase()
-    return mockDeceased.filter(
-      (d) =>
-        d.surname.toLowerCase().includes(q) ||
-        d.given_names.toLowerCase().includes(q)
-    )
-  }, [query])
-
-  // Build plot/cemetery lookup for interments
-  const plotMap = useMemo(() => {
-    const map: Record<string, { plotNumber: string; cemetery: string }> = {}
-    for (const plot of mockPlots) {
-      map[plot.id] = {
-        plotNumber: plot.plot_number,
-        cemetery: sectionToCemetery[plot.section_id] ?? "Unknown",
-      }
+  const doSearch = useCallback(async (q: string) => {
+    if (q.length < 2) {
+      setResults([])
+      setHasSearched(false)
+      return
     }
-    return map
+    setIsSearching(true)
+    try {
+      const data = await searchDeceasedAction(q)
+      setResults(data)
+      setHasSearched(true)
+    } catch {
+      setResults([])
+    } finally {
+      setIsSearching(false)
+    }
   }, [])
 
-  const intermentMap = useMemo(() => {
-    const map: Record<string, { plotNumber: string; cemetery: string; date: string }> = {}
-    for (const int of mockInterments) {
-      const plot = plotMap[int.plot_id]
-      if (plot) {
-        map[int.deceased_id] = {
-          plotNumber: plot.plotNumber,
-          cemetery: plot.cemetery,
-          date: int.interment_date,
-        }
-      }
-    }
-    return map
-  }, [plotMap])
+  // Debounce search by 300ms
+  useEffect(() => {
+    const timer = setTimeout(() => doSearch(query), 300)
+    return () => clearTimeout(timer)
+  }, [query, doSearch])
 
   return (
     <div className="p-6 md:p-10 space-y-8">
@@ -89,6 +78,11 @@ export default function PublicSearchPage() {
             Type at least 2 characters to search
           </p>
         )}
+        {isSearching && (
+          <p className="text-xs text-muted-foreground mt-2 text-center">
+            Searching...
+          </p>
+        )}
       </div>
 
       {/* ── Results ── */}
@@ -97,64 +91,60 @@ export default function PublicSearchPage() {
           <p className="text-sm text-muted-foreground">
             {results.length} result{results.length !== 1 ? "s" : ""} found
           </p>
-          {results.map((deceased) => {
-            const interment = intermentMap[deceased.id]
-            return (
-              <div
-                key={deceased.id}
-                className="bg-surface-container-lowest rounded-xl shadow-card p-5"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-semibold text-foreground text-lg">
-                      {deceased.surname}, {deceased.given_names}
-                    </h3>
-                    {deceased.maiden_name && (
-                      <p className="text-sm text-muted-foreground">
-                        n&eacute;e {deceased.maiden_name}
-                      </p>
-                    )}
-                  </div>
-                  {deceased.religion && (
-                    <span className="text-xs text-muted-foreground bg-surface-container-low px-2 py-1 rounded-full">
-                      {deceased.religion}
-                    </span>
+          {results.map((deceased) => (
+            <div
+              key={deceased.id}
+              className="bg-surface-container-lowest rounded-xl shadow-card p-5"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold text-foreground text-lg">
+                    {deceased.surname}, {deceased.given_names ?? ""}
+                  </h3>
+                  {deceased.maiden_name && (
+                    <p className="text-sm text-muted-foreground">
+                      n&eacute;e {deceased.maiden_name}
+                    </p>
                   )}
                 </div>
+                {deceased.religion && (
+                  <span className="text-xs text-muted-foreground bg-surface-container-low px-2 py-1 rounded-full">
+                    {deceased.religion}
+                  </span>
+                )}
+              </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="size-4 text-muted-foreground shrink-0" />
+                  <span className="text-muted-foreground">
+                    {formatDate(deceased.date_of_birth)} — {formatDate(deceased.date_of_death)}
+                  </span>
+                </div>
+                {deceased.cemetery_name && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Calendar className="size-4 text-muted-foreground shrink-0" />
-                    <span className="text-muted-foreground">
-                      {formatDate(deceased.date_of_birth)} — {formatDate(deceased.date_of_death)}
+                    <MapPin className="size-4 text-primary shrink-0" />
+                    <span className="font-medium text-foreground">
+                      {deceased.cemetery_name}
+                      {deceased.plot_number ? ` — Plot ${deceased.plot_number}` : ""}
                     </span>
-                  </div>
-                  {interment && (
-                    <>
-                      <div className="flex items-center gap-2 text-sm">
-                        <MapPin className="size-4 text-primary shrink-0" />
-                        <span className="font-medium text-foreground">
-                          {interment.cemetery} — Plot {interment.plotNumber}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {interment && (
-                  <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
-                    <User className="size-3.5" />
-                    Interred {formatDate(interment.date)}
                   </div>
                 )}
               </div>
-            )
-          })}
+
+              {deceased.interment_date && (
+                <div className="mt-3 pt-3 border-t border-border flex items-center gap-2 text-sm text-muted-foreground">
+                  <User className="size-3.5" />
+                  Interred {formatDate(deceased.interment_date)}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
       {/* ── No Results ── */}
-      {query.length >= 2 && results.length === 0 && (
+      {hasSearched && !isSearching && results.length === 0 && (
         <div className="max-w-xl mx-auto text-center py-8 animate-fade-up">
           <Search className="size-8 text-muted-foreground/40 mx-auto mb-3" />
           <p className="text-muted-foreground">

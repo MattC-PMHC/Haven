@@ -1,14 +1,14 @@
 // Public Portal — Cemetery Information
 //
 // Lists all cemeteries with basic info, hours, and contact details.
-// No authentication required.
+// No authentication required. Fetches real data from Supabase.
 
 import { MapPin, Clock, Phone, Mail } from "lucide-react"
-import { mockCemeteries } from "@/lib/mock/cemeteries"
 import { Badge } from "@/components/ui/badge"
+import { getPublicCemeteries } from "@/lib/queries/public-portal"
 
-export default function PublicCemeteriesPage() {
-  const active = mockCemeteries.filter((c) => c.status === "active")
+export default async function PublicCemeteriesPage() {
+  const cemeteries = await getPublicCemeteries()
 
   return (
     <div className="p-6 md:p-10 space-y-8">
@@ -24,7 +24,7 @@ export default function PublicCemeteriesPage() {
 
       {/* ── Cemetery Cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {active.map((cemetery, i) => (
+        {cemeteries.map((cemetery, i) => (
           <div
             key={cemetery.id}
             className={`bg-surface-container-lowest rounded-xl shadow-card p-6 animate-fade-up stagger-${i + 1}`}
@@ -87,6 +87,12 @@ export default function PublicCemeteriesPage() {
             </div>
           </div>
         ))}
+
+        {cemeteries.length === 0 && (
+          <div className="col-span-2 text-center py-12 text-muted-foreground">
+            No cemeteries found.
+          </div>
+        )}
       </div>
     </div>
   )

@@ -110,6 +110,34 @@ export async function demoSignIn(email: string): Promise<
         },
         { onConflict: "id" }
       )
+
+      // Link demo user to a matching contact record so portals work.
+      // For FD/mason roles, update the first matching contact's email
+      // to the demo user's email so the portal can find the link.
+      if (demo.role === "funeral_director") {
+        await admin
+          .from("contacts")
+          .update({ email })
+          .eq("contact_type", "funeral_director")
+          .eq("tenant_id", DEMO_TENANT_ID)
+          .order("created_at", { ascending: true })
+          .limit(1)
+      } else if (demo.role === "mason") {
+        await admin
+          .from("contacts")
+          .update({ email })
+          .eq("contact_type", "mason")
+          .eq("tenant_id", DEMO_TENANT_ID)
+          .order("created_at", { ascending: true })
+          .limit(1)
+      } else if (demo.role === "grounds_crew") {
+        // Assign any unassigned or existing work orders to this crew member
+        await admin
+          .from("work_orders")
+          .update({ assigned_to: userId })
+          .eq("tenant_id", DEMO_TENANT_ID)
+          .is("assigned_to", null)
+      }
     }
 
     // Sign in with anon client to get session tokens

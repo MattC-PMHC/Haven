@@ -20,6 +20,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import type { UserRole } from "@/lib/types/database"
+import { getHomeForRole } from "@/lib/auth/roles"
 
 // ── Demo user definitions ──────────────────────────────────
 
@@ -118,9 +119,9 @@ export function DemoUserPicker() {
         throw new Error(error.message)
       }
 
-      // Force Next.js to re-check auth cookies, then navigate
+      // Force Next.js to re-check auth cookies, then navigate to role home
       router.refresh()
-      router.push("/dashboard")
+      router.push(getHomeForRole(user.role))
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong"
       toast.error(message)

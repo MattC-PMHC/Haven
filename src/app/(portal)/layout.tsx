@@ -1,18 +1,29 @@
 // Portal layout — simplified shell for external stakeholder portals.
 //
-// Instead of the full admin sidebar, portals get a compact top navigation
-// bar with Haven branding and role-specific nav links. Each portal sub-route
-// (funeral-director, mason, grounds) adds its own nav items.
-//
-// In production, this would check the user's role and redirect if they
-// don't belong to the portal they're trying to access.
+// Enforces that only portal-level roles can access these pages.
+// Middleware handles cross-portal redirection; this is the safety net.
 
+import { getSession } from "@/lib/auth/get-session"
+import { redirect } from "next/navigation"
 import { PortalShell } from "@/components/layout/PortalShell"
 
-export default function PortalLayout({
+export default async function PortalLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <PortalShell>{children}</PortalShell>
+  const session = await getSession()
+
+  if (!session) {
+    redirect("/login")
+  }
+
+  return (
+    <PortalShell
+      userName={session.profile.full_name || session.user.email}
+      userRole={session.role}
+    >
+      {children}
+    </PortalShell>
+  )
 }

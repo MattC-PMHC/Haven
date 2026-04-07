@@ -1,7 +1,8 @@
 // Mason Portal — Permit Tracking
 //
-// Full list of all permits with status tracking.
+// Full list of all permits with status tracking. Real Supabase data.
 
+import { redirect } from "next/navigation"
 import { Landmark } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -12,18 +13,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { getSession } from "@/lib/auth/get-session"
 import {
-  mockPermits,
-  getWorkTypeLabel,
-  getPermitStatusLabel,
-} from "@/lib/mock/permits"
+  getMasonContactForUser,
+  getPermitsForMason,
+} from "@/lib/queries/mason-portal"
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "—"
   return new Date(dateStr).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",
   })
+}
+
+const workTypeLabels: Record<string, string> = {
+  new_memorial: "New Memorial",
+  additional_inscription: "Additional Inscription",
+  repair: "Repair",
+  restoration: "Restoration",
+  removal: "Removal",
 }
 
 const statusStyles: Record<string, string> = {
@@ -34,9 +44,36 @@ const statusStyles: Record<string, string> = {
   completed: "bg-surface-container-high text-muted-foreground",
 }
 
-export default function MasonPermitsPage() {
+const statusLabels: Record<string, string> = {
+  submitted: "Submitted",
+  under_review: "Under Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  completed: "Completed",
+}
+
+export default async function MasonPermitsPage() {
+  const session = await getSession()
+  if (!session) redirect("/login")
+
+  const masonContact = await getMasonContactForUser(session.user.email)
+
+  if (!masonContact) {
+    return (
+      <div className="p-6 md:p-10 space-y-6 text-center">
+        <h2 className="text-2xl font-bold text-primary">Account Not Linked</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Your login isn&apos;t linked to a mason contact record yet.
+          Please contact the council administrator.
+        </p>
+      </div>
+    )
+  }
+
+  const permits = await getPermitsForMason(masonContact.id)
+
   // Sort: active first, then by date
-  const sorted = [...mockPermits].sort((a, b) => {
+  const sorted = [...permits].sort((a, b) => {
     const statusOrder: Record<string, number> = {
       submitted: 0,
       under_review: 1,
@@ -46,7 +83,7 @@ export default function MasonPermitsPage() {
     }
     const diff = (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9)
     if (diff !== 0) return diff
-    return b.submitted_at.localeCompare(a.submitted_at)
+    return (b.submitted_at ?? "").localeCompare(a.submitted_at ?? "")
   })
 
   return (
@@ -84,29 +121,36 @@ export default function MasonPermitsPage() {
                   <div className="flex items-center gap-2">
                     <Landmark className="size-4 text-muted-foreground shrink-0" />
                     <span className="font-medium text-sm">
-                      {getWorkTypeLabel(permit.work_type)}
+                      {workTypeLabels[permit.work_type] ?? permit.work_type}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell className="text-sm font-mono text-muted-foreground">
-                  {permit.plot_id}
+                  {permit.plot_number ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground max-w-[250px] truncate">
-                  {permit.description}
+                  {permit.description ?? "—"}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
                   {formatDate(permit.submitted_at)}
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {permit.reviewed_at ? formatDate(permit.reviewed_at) : "—"}
+                  {formatDate(permit.reviewed_at)}
                 </TableCell>
                 <TableCell className="pr-6">
                   <Badge className={statusStyles[permit.status] ?? ""}>
-                    {getPermitStatusLabel(permit.status)}
+                    {statusLabels[permit.status] ?? permit.status}
                   </Badge>
                 </TableCell>
               </TableRow>
             ))}
+            {sorted.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
+                  No permit applications yet.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -124,10 +168,11 @@ export default function MasonPermitsPage() {
               >
                 <div className="flex items-center gap-2 mb-2">
                   <Badge className={statusStyles[permit.status] ?? ""}>
-                    {getPermitStatusLabel(permit.status)}
+                    {statusLabels[permit.status] ?? permit.status}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    {getWorkTypeLabel(permit.work_type)} — {permit.plot_id}
+                    {workTypeLabels[permit.work_type] ?? permit.work_type}
+                    {permit.plot_number ? ` — ${permit.plot_number}` : ""}
                   </span>
                 </div>
                 <p className="text-sm text-foreground">{permit.approval_notes}</p>
