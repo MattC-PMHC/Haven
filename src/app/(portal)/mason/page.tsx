@@ -1,25 +1,35 @@
 // Mason Portal — Dashboard
 //
 // Shows active permits, pending applications, and quick stats.
+// Fetches real data from Supabase filtered by the mason's contact record.
 
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { Plus, Landmark, Clock, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { getSession } from "@/lib/auth/get-session"
 import {
-  mockPermits,
-  getMasonName,
-  getWorkTypeLabel,
-  getPermitStatusLabel,
+  getMasonContactForUser,
+  getPermitsForMason,
   getPermitStats,
-} from "@/lib/mock/permits"
+} from "@/lib/queries/mason-portal"
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | null): string {
+  if (!dateStr) return "—"
   return new Date(dateStr).toLocaleDateString("en-AU", {
     day: "numeric",
     month: "short",
     year: "numeric",
   })
+}
+
+const workTypeLabels: Record<string, string> = {
+  new_memorial: "New Memorial",
+  additional_inscription: "Additional Inscription",
+  repair: "Repair",
+  restoration: "Restoration",
+  removal: "Removal",
 }
 
 const statusStyles: Record<string, string> = {
@@ -30,14 +40,40 @@ const statusStyles: Record<string, string> = {
   completed: "bg-surface-container-high text-muted-foreground",
 }
 
-export default function MasonDashboard() {
-  const stats = getPermitStats()
+const statusLabels: Record<string, string> = {
+  submitted: "Submitted",
+  under_review: "Under Review",
+  approved: "Approved",
+  rejected: "Rejected",
+  completed: "Completed",
+}
 
-  // For mock, show all permits (in production, filter by mason contact ID)
-  const active = mockPermits.filter(
+export default async function MasonDashboard() {
+  const session = await getSession()
+  if (!session) redirect("/login")
+
+  const masonContact = await getMasonContactForUser(session.user.email)
+
+  // If no contact record found, show a helpful message
+  if (!masonContact) {
+    return (
+      <div className="p-6 md:p-10 space-y-6 text-center">
+        <h2 className="text-2xl font-bold text-primary">Account Not Linked</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          Your login isn&apos;t linked to a mason contact record yet.
+          Please contact the council administrator to set up your account.
+        </p>
+      </div>
+    )
+  }
+
+  const permits = await getPermitsForMason(masonContact.id)
+  const stats = await getPermitStats(masonContact.id)
+
+  const active = permits.filter(
     (p) => p.status === "submitted" || p.status === "under_review" || p.status === "approved"
   )
-  const completed = mockPermits.filter((p) => p.status === "completed")
+  const completed = permits.filter((p) => p.status === "completed")
 
   return (
     <div className="p-6 md:p-10 space-y-8">
@@ -93,18 +129,21 @@ export default function MasonDashboard() {
                 <div className="flex items-center gap-2">
                   <Landmark className="size-4 text-muted-foreground shrink-0" />
                   <p className="font-medium text-foreground truncate">
-                    {getWorkTypeLabel(permit.work_type)} — {permit.plot_id}
+                    {workTypeLabels[permit.work_type] ?? permit.work_type}
+                    {permit.plot_number ? ` — ${permit.plot_number}` : ""}
                   </p>
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
-                  {permit.description}
-                </p>
+                {permit.description && (
+                  <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+                    {permit.description}
+                  </p>
+                )}
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Submitted {formatDate(permit.submitted_at)}
                 </p>
               </div>
               <Badge className={statusStyles[permit.status] ?? ""}>
-                {getPermitStatusLabel(permit.status)}
+                {statusLabels[permit.status] ?? permit.status}
               </Badge>
             </div>
           ))}
@@ -128,10 +167,11 @@ export default function MasonDashboard() {
               <div key={permit.id} className="px-5 py-4 flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-medium text-foreground truncate">
-                    {getWorkTypeLabel(permit.work_type)} — {permit.plot_id}
+                    {workTypeLabels[permit.work_type] ?? permit.work_type}
+                    {permit.plot_number ? ` — ${permit.plot_number}` : ""}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Completed {permit.completed_at ? formatDate(permit.completed_at) : "—"}
+                    Completed {formatDate(permit.completed_at)}
                   </p>
                 </div>
                 <Badge className="bg-surface-container-high text-muted-foreground">

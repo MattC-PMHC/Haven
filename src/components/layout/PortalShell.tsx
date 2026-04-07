@@ -24,11 +24,18 @@ import {
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { logoutAction } from "@/lib/actions/auth"
 
 interface NavItem {
   label: string
   href: string
   icon: LucideIcon
+}
+
+interface PortalShellProps {
+  children: React.ReactNode
+  userName?: string
+  userRole?: string
 }
 
 // Each portal has its own navigation links
@@ -69,7 +76,7 @@ function getPortalConfig(pathname: string) {
   return null
 }
 
-export function PortalShell({ children }: { children: React.ReactNode }) {
+export function PortalShell({ children, userName, userRole }: PortalShellProps) {
   const pathname = usePathname()
   const portal = getPortalConfig(pathname)
 
@@ -124,12 +131,25 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
 
           {/* User area */}
           <div className="flex items-center gap-2">
+            {userName && (
+              <span className="text-white/80 text-sm hidden sm:inline font-medium">
+                {userName}
+              </span>
+            )}
             <span className="text-white/60 text-sm hidden sm:inline">
-              {portal?.role ?? "Portal"}
+              {portal?.role ?? userRole ?? "Portal"}
             </span>
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10" aria-label="Log out">
-              <LogOut className="size-4" aria-hidden="true" />
-            </Button>
+            <form action={logoutAction}>
+              <Button
+                type="submit"
+                variant="ghost"
+                size="sm"
+                className="text-white/70 hover:text-white hover:bg-white/10"
+                aria-label="Log out"
+              >
+                <LogOut className="size-4" aria-hidden="true" />
+              </Button>
+            </form>
           </div>
         </div>
 

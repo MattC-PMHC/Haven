@@ -72,8 +72,9 @@ export async function loginAction(
     return { error: "Invalid email or password. Please try again." }
   }
 
-  // Get the redirect URL from the form (hidden field) or default to /dashboard
-  const redirectTo = (formData.get("redirect") as string) || "/dashboard"
+  // If a specific redirect was requested (e.g. from middleware), use it.
+  // Otherwise redirect to root — middleware will route by role.
+  const redirectTo = (formData.get("redirect") as string) || "/"
   redirect(redirectTo)
 }
 
@@ -159,7 +160,7 @@ export async function registerAction(
   }
 
   // If email confirmation is enabled, tell the user to check their email.
-  // If not, redirect to dashboard.
+  // If not, redirect to root — middleware will route by role.
   if (authData.user.identities?.length === 0) {
     return {
       success:
@@ -167,7 +168,7 @@ export async function registerAction(
     }
   }
 
-  redirect("/dashboard")
+  redirect("/")
 }
 
 // ── FORGOT PASSWORD ─────────────────────────────────────────

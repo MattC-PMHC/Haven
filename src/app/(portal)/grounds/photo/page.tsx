@@ -1,9 +1,8 @@
-// Grounds Crew ��� Photo Capture
+// Grounds Crew — Photo Capture (server component)
 //
-// Mobile-first page for capturing photos on-site.
-// Uses a placeholder — in production, this would use the device camera API
-// and upload to Supabase Storage.
+// Fetches real work orders for the selector, renders photo UI.
 
+import { redirect } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft, Camera, Upload, Image } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,10 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { getActiveWorkOrders } from "@/lib/mock/work-orders"
+import { getSession } from "@/lib/auth/get-session"
+import { getWorkOrdersForCrew } from "@/lib/queries/grounds-portal"
 
-export default function GroundsPhotoCapturePage() {
-  const active = getActiveWorkOrders()
+export default async function GroundsPhotoCapturePage() {
+  const session = await getSession()
+  if (!session) redirect("/login")
+
+  const workOrders = await getWorkOrdersForCrew(session.user.id)
+  const active = workOrders.filter(
+    (wo) => wo.status !== "completed" && wo.status !== "cancelled"
+  )
 
   return (
     <div className="p-4 md:p-10 max-w-lg mx-auto space-y-6">
@@ -39,7 +45,7 @@ export default function GroundsPhotoCapturePage() {
         </p>
       </div>
 
-      {/* ── Camera Area (placeholder) ── */}
+      {/* ── Camera Area (placeholder until HTTPS deployment) ── */}
       <div className="bg-surface-container-low rounded-xl border-2 border-dashed border-border p-12 text-center animate-fade-up stagger-1">
         <Camera className="size-12 text-muted-foreground/40 mx-auto mb-4" />
         <Button className="rounded-xl h-14 text-lg px-8" disabled>
@@ -47,7 +53,7 @@ export default function GroundsPhotoCapturePage() {
           Open Camera
         </Button>
         <p className="text-xs text-muted-foreground mt-3">
-          Camera access will be available once the app is deployed
+          Camera access requires HTTPS — available once deployed
         </p>
       </div>
 
@@ -61,7 +67,7 @@ export default function GroundsPhotoCapturePage() {
           </p>
         </div>
 
-        {/* ── Link to Work Order ── */}
+        {/* ── Link to Work Order (real data) ── */}
         <div className="space-y-2">
           <Label>Attach to Work Order</Label>
           <Select>
@@ -74,6 +80,11 @@ export default function GroundsPhotoCapturePage() {
                   {wo.title}
                 </SelectItem>
               ))}
+              {active.length === 0 && (
+                <SelectItem value="none" disabled>
+                  No active work orders
+                </SelectItem>
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -87,6 +98,9 @@ export default function GroundsPhotoCapturePage() {
           <Image className="size-5" />
           Upload Photo
         </Button>
+        <p className="text-xs text-muted-foreground text-center">
+          Photo upload will be available once storage is connected.
+        </p>
       </div>
     </div>
   )
