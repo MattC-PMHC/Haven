@@ -1,123 +1,158 @@
 // proxy.ts (Next.js 16 — replaces the deprecated middleware.ts)
 //
-// This runs on EVERY request before the page renders. It does two things:
-// 1. Refreshes the Supabase session token (keeps users logged in)
-// 2. Protects routes — redirects unauthenticated users to /login
-//
-// IMPORTANT: proxy.ts cannot read the database directly (it runs on the
-// edge). It can only read cookies/headers. For role-based checks we rely
-// on requireRole() inside each page's server component.
+// Runs on every request (except static assets). Reads the Supabase
+// session from cookies and redirects users to their role-appropriate
+// section of the app.
 
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+import type { UserRole } from "@/lib/types/database"
+import { ADMIN_ROLES, getHomeForRole } from "@/lib/auth/roles"
 
-// Routes that don't require authentication
-const publicPaths = [
+// ── Path classification ──────────────────────────────────────
+
+const PUBLIC_PATHS = [
   "/login",
   "/register",
   "/forgot-password",
-  "/api/auth/callback",
-  "/public",
-  "/dashboard", // TODO: Remove — temporary for design preview without Supabase
+  "/api/auth",
+  "/search",
+  "/cemeteries",
+  "/unauthorized",
 ]
 
 function isPublicPath(pathname: string): boolean {
-  return publicPaths.some(
-    (path) => pathname === path || pathname.startsWith(path + "/")
+  return PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
   )
 }
+
+function isAdminPath(pathname: string): boolean {
+  const adminPrefixes = [
+    "/dashboard",
+    "/plots",
+    "/registry",
+    "/bookings",
+    "/maps",
+    "/settings",
+    "/reports",
+    "/audit",
+    "/contacts",
+    "/documents",
+    "/work-orders",
+    "/memorials",
+    "/rights",
+    "/notifications",
+  ]
+  return adminPrefixes.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  )
+}
+
+function isPortalPath(pathname: string): boolean {
+  return (
+    pathname.startsWith("/funeral-director") ||
+    pathname.startsWith("/mason") ||
+    pathname.startsWith("/grounds")
+  )
+}
+
+// ── Proxy ────────────────────────────────────────────────────
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Let static files, images, and favicon through without auth checks
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/favicon") ||
-    pathname.includes(".")
-  ) {
+  // Skip public paths — no auth needed
+  if (isPublicPath(pathname)) {
     return NextResponse.next()
   }
 
-  // If Supabase isn't configured yet, skip all auth checks
-  // TODO: Remove this guard once .env.local is set up
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    return NextResponse.next()
-  }
-
-  // Create a response we can modify (to update cookies)
+  // Create a response we can modify (to set refreshed cookies)
   let response = NextResponse.next({
     request: { headers: request.headers },
   })
 
-  // Create a Supabase client that can read AND write cookies.
-  // This is how Supabase keeps the session alive — it refreshes
-  // the JWT token and writes updated cookies back to the browser.
+  // If Supabase isn't configured, let the page handle it
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    return response
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Write cookies to both the request (for downstream) and
-          // the response (for the browser)
-          cookiesToSet.forEach(({ name, value }) => {
+          cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
-          })
+          )
           response = NextResponse.next({
             request: { headers: request.headers },
           })
-          cookiesToSet.forEach(({ name, value, options }) => {
+          cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
-          })
+          )
         },
       },
     }
   )
 
-  // Refresh the session — this is the key call that keeps users
-  // logged in by refreshing expired JWTs automatically.
+  // Refresh the session (this also sets updated cookies)
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // If the user is NOT logged in and trying to access a protected route,
-  // redirect them to the login page.
-  if (!user && !isPublicPath(pathname)) {
+  // ── Root path: redirect based on auth state ──
+  if (pathname === "/") {
+    if (!user) {
+      return NextResponse.redirect(new URL("/login", request.url))
+    }
+    const role = (user.app_metadata?.role as UserRole) ?? "council_officer"
+    const home = getHomeForRole(role)
+    return NextResponse.redirect(new URL(home, request.url))
+  }
+
+  // ── Protected paths: require auth ──
+  if (!user) {
     const loginUrl = new URL("/login", request.url)
-    // Save where they were trying to go so we can redirect back after login
     loginUrl.searchParams.set("redirect", pathname)
     return NextResponse.redirect(loginUrl)
   }
 
-  // If the user IS logged in and trying to visit login/register,
-  // redirect them to the dashboard instead (no need to log in again).
-  if (user && (pathname === "/login" || pathname === "/register")) {
+  const role = (user.app_metadata?.role as UserRole) ?? "council_officer"
+  const isAdmin = ADMIN_ROLES.includes(role)
+
+  // ── Portal user trying to access admin paths → redirect to their portal ──
+  if (!isAdmin && isAdminPath(pathname)) {
+    const home = getHomeForRole(role)
+    return NextResponse.redirect(new URL(home, request.url))
+  }
+
+  // ── Admin user trying to access portal paths → redirect to dashboard ──
+  if (isAdmin && isPortalPath(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
-  // Redirect root "/" to dashboard if logged in, login if not
-  if (pathname === "/") {
-    if (user) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
-    } else {
-      return NextResponse.redirect(new URL("/login", request.url))
+  // ── Portal user trying to access wrong portal → redirect to their portal ──
+  if (!isAdmin && isPortalPath(pathname)) {
+    const home = getHomeForRole(role)
+    if (home && !pathname.startsWith(home)) {
+      return NextResponse.redirect(new URL(home, request.url))
     }
   }
 
   return response
 }
 
-// Only run the proxy on app routes, not on static files
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 }
