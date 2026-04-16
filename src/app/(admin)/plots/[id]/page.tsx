@@ -8,8 +8,9 @@ import { ArrowLeft, Grid3x3 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PlotStatusBadge } from "@/components/records/PlotStatusBadge"
 import { PlotDetailTabs } from "@/components/records/PlotDetailTabs"
-import { getPlotById, sectionToCemetery } from "@/lib/mock/plots"
-import { mockSections } from "@/lib/mock/cemeteries"
+import { getPlotById } from "@/lib/queries/plots"
+import { getSections } from "@/lib/queries/sections"
+import { getCemeteries } from "@/lib/queries/cemeteries"
 
 interface PlotDetailPageProps {
   params: Promise<{ id: string }>
@@ -34,12 +35,20 @@ const plotTypeLabels: Record<string, string> = {
 export default async function PlotDetailPage({ params }: PlotDetailPageProps) {
   const { id } = await params
 
-  const plot = getPlotById(id)
+  const [plot, sections, cemeteries] = await Promise.all([
+    getPlotById(id),
+    getSections(),
+    getCemeteries(),
+  ])
   if (!plot) notFound()
 
-  const section = mockSections.find((s) => s.id === plot.section_id)
-  const cemeteryName = sectionToCemetery[plot.section_id] ?? "Unknown"
-  const activeSections = mockSections.filter((s) => s.status === "active")
+  const section = sections.find((s) => s.id === plot.section_id)
+  const cemeteryNameMap: Record<string, string> = {}
+  for (const c of cemeteries) {
+    cemeteryNameMap[c.id] = c.name
+  }
+  const cemeteryName = section ? (cemeteryNameMap[section.cemetery_id] ?? "Unknown") : "Unknown"
+  const activeSections = sections.filter((s) => s.status === "active")
 
   return (
     <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">

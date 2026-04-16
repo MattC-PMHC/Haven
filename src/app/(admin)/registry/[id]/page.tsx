@@ -5,7 +5,7 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeft, BookUser } from "lucide-react"
-import { getDeceasedById, getIntermentsForDeceased } from "@/lib/mock/deceased"
+import { getDeceasedById, getIntermentsForDeceased } from "@/lib/queries/deceased"
 import { DeceasedDetailTabs } from "@/components/records/DeceasedDetailTabs"
 
 interface DeceasedDetailPageProps {
@@ -24,10 +24,10 @@ function formatDate(dateStr: string | null): string {
 export default async function DeceasedDetailPage({ params }: DeceasedDetailPageProps) {
   const { id } = await params
 
-  const deceased = getDeceasedById(id)
+  const deceased = await getDeceasedById(id)
   if (!deceased) notFound()
 
-  const interments = getIntermentsForDeceased(id)
+  const interments = await getIntermentsForDeceased(id)
 
   return (
     <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">
