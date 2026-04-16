@@ -1,9 +1,8 @@
 // Deceased records list — searchable registry of all deceased persons.
 
 import Link from "next/link"
-import { Plus, Search } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
@@ -12,7 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { mockDeceased, getDeceasedStats } from "@/lib/mock/deceased"
+import { getDeceasedRecords, getDeceasedStats } from "@/lib/queries/deceased"
+import { RegistrySearch } from "./RegistrySearch"
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—"
@@ -37,9 +37,29 @@ function calculateAge(dob: string | null, dod: string | null): string {
   return String(age)
 }
 
-export default function RegistryPage() {
-  const deceased = mockDeceased
-  const stats = getDeceasedStats()
+interface RegistryPageProps {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function RegistryPage({ searchParams }: RegistryPageProps) {
+  const { q } = await searchParams
+  const [allDeceased, stats] = await Promise.all([
+    getDeceasedRecords(),
+    getDeceasedStats(),
+  ])
+
+  // Filter locally if search query provided
+  const deceased = q
+    ? allDeceased.filter((d) => {
+        const term = q.toLowerCase()
+        return (
+          d.surname?.toLowerCase().includes(term) ||
+          d.given_names?.toLowerCase().includes(term) ||
+          d.maiden_name?.toLowerCase().includes(term) ||
+          d.death_cert_number?.toLowerCase().includes(term)
+        )
+      })
+    : allDeceased
 
   return (
     <div className="p-4 md:p-10 max-w-[1600px] mx-auto w-full space-y-8">
@@ -72,18 +92,16 @@ export default function RegistryPage() {
           <p className="text-2xl font-bold text-primary">{stats.thisYear}</p>
         </div>
         <div className="bg-surface-container-lowest rounded-xl p-5 shadow-card">
-          <p className="text-muted-foreground text-sm font-medium">Pending Interments</p>
-          <p className="text-2xl font-bold text-warning">1</p>
+          <p className="text-muted-foreground text-sm font-medium">Showing</p>
+          <p className="text-2xl font-bold text-primary">
+            {deceased.length}{q ? ` of ${allDeceased.length}` : ""}
+          </p>
         </div>
       </div>
 
-      {/* ── Search Bar (visual only for now) ── */}
-      <div className="relative max-w-md animate-fade-up stagger-2">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input placeholder="Search by name, certificate number..." className="pl-10" disabled />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-          Live search coming soon
-        </span>
+      {/* ── Search Bar ── */}
+      <div className="animate-fade-up stagger-2">
+        <RegistrySearch defaultValue={q ?? ""} />
       </div>
 
       {/* ── Table ── */}
@@ -101,44 +119,52 @@ export default function RegistryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {deceased.map((d, i) => (
-              <TableRow
-                key={d.id}
-                className={i % 2 === 1 ? "bg-surface-container-low/50" : ""}
-              >
-                <TableCell className="pl-6">
-                  <Link
-                    href={`/registry/${d.id}`}
-                    className="font-medium text-foreground hover:text-primary transition-colors"
-                  >
-                    {d.surname}, {d.given_names}
-                  </Link>
-                  {d.maiden_name && (
-                    <span className="text-xs text-muted-foreground ml-1">
-                      (née {d.maiden_name})
-                    </span>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {formatDate(d.date_of_birth)}
-                </TableCell>
-                <TableCell className="text-sm">{formatDate(d.date_of_death)}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {calculateAge(d.date_of_birth, d.date_of_death)}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground font-mono">
-                  {d.death_cert_number ?? "—"}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {d.religion ?? "—"}
-                </TableCell>
-                <TableCell className="pr-6 text-right">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href={`/registry/${d.id}`}>View</Link>
-                  </Button>
+            {deceased.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
+                  {q ? `No records matching "${q}"` : "No deceased records found."}
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              deceased.map((d, i) => (
+                <TableRow
+                  key={d.id}
+                  className={i % 2 === 1 ? "bg-surface-container-low/50" : ""}
+                >
+                  <TableCell className="pl-6">
+                    <Link
+                      href={`/registry/${d.id}`}
+                      className="font-medium text-foreground hover:text-primary transition-colors"
+                    >
+                      {d.surname}, {d.given_names}
+                    </Link>
+                    {d.maiden_name && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (née {d.maiden_name})
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {formatDate(d.date_of_birth)}
+                  </TableCell>
+                  <TableCell className="text-sm">{formatDate(d.date_of_death)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {calculateAge(d.date_of_birth, d.date_of_death)}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground font-mono">
+                    {d.death_cert_number ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {d.religion ?? "—"}
+                  </TableCell>
+                  <TableCell className="pr-6 text-right">
+                    <Button variant="ghost" size="sm" asChild>
+                      <Link href={`/registry/${d.id}`}>View</Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

@@ -18,8 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { PlotStatusBadge } from "@/components/records/PlotStatusBadge"
-import { mockPlots, sectionToCemetery, getPlotStats } from "@/lib/mock/plots"
-import { mockSections } from "@/lib/mock/cemeteries"
+import { getPlots } from "@/lib/queries/plots"
+import { getSections } from "@/lib/queries/sections"
+import { getCemeteries } from "@/lib/queries/cemeteries"
 
 // Human-readable labels for plot types
 const plotTypeLabels: Record<string, string> = {
@@ -38,14 +39,32 @@ const plotTypeLabels: Record<string, string> = {
   war_grave: "War Grave",
 }
 
-export default function PlotsPage() {
-  const plots = mockPlots
-  const stats = getPlotStats()
+export default async function PlotsPage() {
+  const [plots, sections, cemeteries] = await Promise.all([
+    getPlots(),
+    getSections(),
+    getCemeteries(),
+  ])
 
-  // Build a lookup: section ID -> section name
+  // Compute stats from fetched plots
+  const stats = {
+    total: plots.length,
+    byStatus: plots.reduce((acc, p) => {
+      acc[p.status] = (acc[p.status] || 0) + 1
+      return acc
+    }, {} as Record<string, number>),
+  }
+
+  // Build lookups: section ID -> section name, section ID -> cemetery name
+  const cemeteryNames: Record<string, string> = {}
+  for (const c of cemeteries) {
+    cemeteryNames[c.id] = c.name
+  }
   const sectionNames: Record<string, string> = {}
-  for (const s of mockSections) {
+  const sectionToCemetery: Record<string, string> = {}
+  for (const s of sections) {
     sectionNames[s.id] = s.name
+    sectionToCemetery[s.id] = cemeteryNames[s.cemetery_id] ?? "Unknown"
   }
 
   return (
